@@ -1,5 +1,5 @@
 name: DynamicManhunt
-version: '1.0-SNAPSHOT'
+version: '1.0'
 main: me.logmilo.dynamicManhunt.DynamicManhunt
 api-version: '1.21'
 description: A dynamic Manhunt plugin with unique mechanics and challenges.
