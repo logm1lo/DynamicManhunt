@@ -12,7 +12,10 @@ public class DynamicManhunt extends JavaPlugin {
     @Override
     public void onEnable() {
         // Initialize the GameManager instance
-        gameManager = new GameManager(this);
+        this.gameManager = new GameManager(this); // Initialize GameManager
+
+        // Example: Register commands or events
+        getServer().getPluginManager().registerEvents(new ManhuntListener(gameManager), this);
 
         // Initialize configuration settings
         configSettings = new HashMap<>();

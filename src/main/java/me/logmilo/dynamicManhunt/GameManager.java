@@ -1,21 +1,37 @@
 package me.logmilo.dynamicManhunt;
 
+import java.util.*;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.entity.Item;
-import java.util.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.Random;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class GameManager {
     private final DynamicManhunt plugin;
+    private final PlayerManager playerManager;  // PlayerManager instance
+    private boolean gameActive = false;
     private final List<Player> runners = new ArrayList<>();
     private final List<Player> hunters = new ArrayList<>();
     private final Map<Player, Long> hunterCooldowns = new HashMap<>();
-    private boolean gameActive = false;
 
     public GameManager(DynamicManhunt plugin) {
         this.plugin = plugin;
+        this.playerManager = new PlayerManager(plugin);
+    }
+
+    public DynamicManhunt getPlugin() {
+        return plugin;
     }
 
     public void startGame(List<Player> allPlayers, int numberOfHunters) {
@@ -23,6 +39,8 @@ public class GameManager {
         gameActive = true;
 
         Bukkit.broadcastMessage("§aDynamic Manhunt has started!");
+
+        playerManager.broadcastRoles();
 
         for (Player hunter : hunters) {
             hunter.setWalkSpeed(0.3f); // Normal speed is 0.2
@@ -36,16 +54,12 @@ public class GameManager {
     }
 
     private void selectPlayers(List<Player> allPlayers, int numberOfHunters) {
-        Collections.shuffle(allPlayers); // Shuffle the player list to randomize order
-
-        hunters.clear();
-        runners.clear();
-
+        // Shuffle the list and assign roles
         for (int i = 0; i < allPlayers.size(); i++) {
             if (i < numberOfHunters) {
-                hunters.add(allPlayers.get(i)); // First 'numberOfHunters' players are hunters
+                playerManager.addHunter(allPlayers.get(i));  // Add to hunters
             } else {
-                runners.add(allPlayers.get(i)); // The rest are runners
+                playerManager.addRunner(allPlayers.get(i));  // Add to runners
             }
         }
 
@@ -59,9 +73,7 @@ public class GameManager {
 
     public void stopGame() {
         gameActive = false;
-        runners.clear();
-        hunters.clear();
-        hunterCooldowns.clear();
+        playerManager.clearPlayers(); // Clear all players at the end of the game
         Bukkit.broadcastMessage("§cDynamic Manhunt has ended!");
     }
 
