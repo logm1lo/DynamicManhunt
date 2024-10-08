@@ -1,6 +1,5 @@
 package me.logmilo.dynamicManhunt;
 
-import java.util.*;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -8,7 +7,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.entity.Item;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Random;
 import java.util.ArrayList;
@@ -20,7 +18,7 @@ import java.util.Map;
 public class GameManager {
     private final DynamicManhunt plugin;
     private final PlayerManager playerManager;  // PlayerManager instance
-    private boolean gameActive = false;
+    private boolean gameActive;
     private final List<Player> runners = new ArrayList<>();
     private final List<Player> hunters = new ArrayList<>();
     private final Map<Player, Long> hunterCooldowns = new HashMap<>();
@@ -53,6 +51,28 @@ public class GameManager {
         startSupplyDrops();
     }
 
+
+    public void removeHunter(Player player) {
+        hunters.remove(player);
+    }
+
+    public boolean isHunter(Player player) {
+        return hunters.contains(player);
+    }
+
+    public void addRunner(Player player) {
+        if (!runners.contains(player)) {
+            runners.add(player);
+        }
+    }
+
+    public void removeRunner(Player player) {
+        runners.remove(player);
+    }
+
+    public boolean isRunner(Player player) {
+        return runners.contains(player);
+    }
     private void selectPlayers(List<Player> allPlayers, int numberOfHunters) {
         // Shuffle the list and assign roles
         for (int i = 0; i < allPlayers.size(); i++) {

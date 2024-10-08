@@ -15,8 +15,7 @@ public class DynamicManhunt extends JavaPlugin {
         this.gameManager = new GameManager(this); // Initialize GameManager
 
         // Example: Register commands or events
-        getServer().getPluginManager().registerEvents(new ManhuntListener(gameManager), this);
-
+        getServer().getPluginManager().registerEvents(new ManhuntListener(gameManager, this), this);
         // Initialize configuration settings
         configSettings = new HashMap<>();
         loadDefaultConfigSettings(); // Load default settings
@@ -53,8 +52,23 @@ public class DynamicManhunt extends JavaPlugin {
         configSettings.put("supplyDropInterval", 60L); // Supply drops every 60 seconds
     }
 
-    // Getter for configurable settings
-    public Object getConfigSetting(String key) {
-        return configSettings.get(key);
+    /**
+     * Retrieves a configurable setting by its key.
+     *
+     * @param key The key of the configuration setting.
+     * @param type The class of the expected return type.
+     * @param <T> The type of the configuration setting.
+     * @return The value associated with the key, or null if the key does not exist.
+     * @throws ClassCastException If the value cannot be cast to the expected type.
+     */
+    public <T> T getConfigSetting(String key, Class<T> type) {
+        Object value = configSettings.get(key);
+        if (value == null) {
+            return null; // Return null if the key does not exist
+        }
+        if (!type.isInstance(value)) {
+            throw new ClassCastException("Value for key '" + key + "' is not of type " + type.getName());
+        }
+        return type.cast(value); // Safe cast
     }
 }
