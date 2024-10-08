@@ -1,0 +1,10 @@
+name: DynamicManhunt
+version: '1.0-SNAPSHOT'
+main: me.logmilo.dynamicManhunt.DynamicManhunt
+api-version: '1.21'
+description: A dynamic Manhunt plugin with unique mechanics and challenges.
+author: logmilo
+commands:
+  manhunt:
+    description: Manage the Manhunt game
+    usage: /<command> <start|stop>

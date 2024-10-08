@@ -1,0 +1,57 @@
+package me.logmilo.dynamicManhunt;
+
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class DynamicManhunt extends JavaPlugin {
+    private GameManager gameManager;
+    private Map<String, Object> configSettings; // A map to hold configurable settings
+
+    @Override
+    public void onEnable() {
+        // Initialize the GameManager instance
+        gameManager = new GameManager(this);
+
+        // Initialize configuration settings
+        configSettings = new HashMap<>();
+        loadDefaultConfigSettings(); // Load default settings
+
+        // Register event listeners
+        getServer().getPluginManager().registerEvents(new GameListener(this, gameManager), this);
+
+        // Log the plugin enabling
+        getLogger().info("Dynamic Manhunt Plugin has been enabled!");
+    }
+
+    @Override
+    public void onDisable() {
+        // Ensure the game is stopped on disable to avoid issues
+        if (gameManager.isGameActive()) {
+            gameManager.stopGame();
+            getLogger().info("Stopped active Manhunt game.");
+        }
+
+        // Log the plugin disabling
+        getLogger().info("Dynamic Manhunt Plugin has been disabled.");
+    }
+
+    // Getter for GameManager
+    public GameManager getGameManager() {
+        return gameManager;
+    }
+
+    // Method to load default configuration settings
+    private void loadDefaultConfigSettings() {
+        configSettings.put("hunterAbilityCooldown", 60L); // Cooldown in seconds
+        configSettings.put("runnerSpeedBoostInterval", 30L); // Interval in seconds
+        configSettings.put("randomEventInterval", 10L); // Random events every 10 seconds
+        configSettings.put("supplyDropInterval", 60L); // Supply drops every 60 seconds
+    }
+
+    // Getter for configurable settings
+    public Object getConfigSetting(String key) {
+        return configSettings.get(key);
+    }
+}
