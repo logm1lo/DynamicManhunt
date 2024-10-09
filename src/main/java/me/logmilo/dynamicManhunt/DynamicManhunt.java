@@ -1,28 +1,31 @@
 package me.logmilo.dynamicManhunt;
 
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Level;
 
 public class DynamicManhunt extends JavaPlugin {
     private GameManager gameManager;
-    private Map<String, Object> configSettings; // A map to hold configurable settings
+    private FileConfiguration config; // To hold the plugin configuration
 
     @Override
     public void onEnable() {
-        // Initialize the GameManager instance
         showStartupMessages();
         this.gameManager = new GameManager(this); // Initialize GameManager
-
-        // Example: Register commands or events
-        getServer().getPluginManager().registerEvents(new ManhuntListener(gameManager, this), this);
-        // Initialize configuration settings
-        configSettings = new HashMap<>();
-        loadDefaultConfigSettings(); // Load default settings
+        PlayerManager playerManager = new PlayerManager(this);
 
         // Register event listeners
+        getServer().getPluginManager().registerEvents(new ManhuntListener(this), this); // Pass only 'this'
+        getServer().getPluginManager().registerEvents(new CompassTrackingManager(gameManager), this);
         getServer().getPluginManager().registerEvents(new GameListener(this, gameManager), this);
+        Objects.requireNonNull(getCommand("checkhunters")).setExecutor(new CheckHunterCountCommand(playerManager));
+        Objects.requireNonNull(getCommand("checkrunners")).setExecutor(new CheckRunnerCountCommand(playerManager));
+        Objects.requireNonNull(getCommand("leaverunner")).setExecutor(new LeaveRunnerCommand(playerManager));
+        Objects.requireNonNull(getCommand("listplayers")).setExecutor(new ListPlayersCommand(playerManager));
+        // Load configuration settings
+        loadConfigSettings();
 
         // Log the plugin enabling
         getLogger().info("Dynamic Manhunt Plugin has been enabled!");
@@ -30,9 +33,9 @@ public class DynamicManhunt extends JavaPlugin {
 
     private void showStartupMessages() {
         getLogger().info("================================");
-        getLogger().info("        Dynamic Manhunt        ");
-        getLogger().info("          Version 1.0          ");
-        getLogger().info("   Developed by LogMilo        ");
+        getLogger().info("        Dynamic Manhunt         ");
+        getLogger().info("          Version 1.0           ");
+        getLogger().info("      Developed by logm1lo      ");
         getLogger().info("  Enjoy your Manhunt Experience!");
         getLogger().info("================================");
     }
@@ -54,12 +57,19 @@ public class DynamicManhunt extends JavaPlugin {
         return gameManager;
     }
 
-    // Method to load default configuration settings
-    private void loadDefaultConfigSettings() {
-        configSettings.put("hunterAbilityCooldown", 60L); // Cooldown in seconds
-        configSettings.put("runnerSpeedBoostInterval", 30L); // Interval in seconds
-        configSettings.put("randomEventInterval", 10L); // Random events every 10 seconds
-        configSettings.put("supplyDropInterval", 60L); // Supply drops every 60 seconds
+    // Method to load configuration settings
+    private void loadConfigSettings() {
+        // Load the config file
+        saveDefaultConfig(); // Create a default config if it does not exist
+        config = getConfig(); // Get the configuration file
+
+        // Example of loading config settings with default values
+        config.addDefault("hunterAbilityCooldown", 60L); // Cooldown in seconds
+        config.addDefault("runnerSpeedBoostInterval", 30L); // Interval in seconds
+        config.addDefault("randomEventInterval", 10L); // Random events every 10 seconds
+        config.addDefault("supplyDropInterval", 60L); // Supply drops every 60 seconds
+        config.options().copyDefaults(true); // Copy default values if they are not already set
+        saveConfig(); // Save the config
     }
 
     /**
@@ -72,10 +82,12 @@ public class DynamicManhunt extends JavaPlugin {
      * @throws ClassCastException If the value cannot be cast to the expected type.
      */
     public <T> T getConfigSetting(String key, Class<T> type) {
-        Object value = configSettings.get(key);
-        if (value == null) {
+        if (!config.contains(key)) {
+            getLogger().log(Level.WARNING, "Configuration key '" + key + "' does not exist.");
             return null; // Return null if the key does not exist
         }
+
+        Object value = config.get(key);
         if (!type.isInstance(value)) {
             throw new ClassCastException("Value for key '" + key + "' is not of type " + type.getName());
         }

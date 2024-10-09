@@ -14,6 +14,12 @@ public class GameListener implements Listener {
     private final DynamicManhunt plugin;
     private final GameManager gameManager;
 
+    // Constants for messages
+    private static final String NOT_ENOUGH_PLAYERS_MSG = ChatColor.RED + "Not enough players to start the game! At least 2 players required.";
+    private static final String GAME_STARTED_MSG = ChatColor.GREEN + "Manhunt has started! Hunters: %s, Runners: %s";
+    private static final String GAME_STOPPED_MSG = ChatColor.RED + "Manhunt has been stopped.";
+    private static final String ALREADY_ACTIVE_MSG = ChatColor.RED + "Manhunt is already active or invalid command.";
+
     public GameListener(DynamicManhunt plugin, GameManager gameManager) {
         this.plugin = plugin;
         this.gameManager = gameManager;
@@ -25,32 +31,67 @@ public class GameListener implements Listener {
         String[] args = event.getMessage().split(" ");
 
         if (args[0].equalsIgnoreCase("/manhunt")) {
-            if (args.length > 1 && args[1].equalsIgnoreCase("start") && !gameManager.isGameActive()) {
-                // Get all online players
-                List<Player> allPlayers = new ArrayList<>(plugin.getServer().getOnlinePlayers());
-                int totalPlayers = allPlayers.size();
+            event.setCancelled(true); // Cancel the event to prevent command conflicts
 
-                // Set the number of hunters to be one less than the number of runners
-                int numberOfHunters = totalPlayers > 1 ? totalPlayers - 1 : 0; // At least one runner required
+            // Check the subcommand
+            if (args.length > 1) {
+                switch (args[1].toLowerCase()) {
+                    case "start":
+                        handleStartCommand(player);
+                        break;
 
-                // Ensure there are enough players
-                if (totalPlayers < 2) {
-                    player.sendMessage(ChatColor.RED + "Not enough players to start the game! At least 2 players required.");
-                    return;
+                    case "stop":
+                        handleStopCommand(player);
+                        break;
+
+                    default:
+                        player.sendMessage(ALREADY_ACTIVE_MSG);
+                        break;
                 }
-
-                // Start the game with all players
-                gameManager.startGame(allPlayers, numberOfHunters); // Pass the number of hunters
-                String message = String.format("%sManhunt has started! Hunters: %s, Runners: %s",
-                        ChatColor.GREEN, gameManager.getHunters(), gameManager.getRunners());
-                Bukkit.broadcastMessage(message); // Broadcast to all players
-            } else if (args.length > 1 && args[1].equalsIgnoreCase("stop") && gameManager.isGameActive()) {
-                gameManager.stopGame();
-                player.sendMessage(ChatColor.RED + "Manhunt has been stopped.");
             } else {
-                player.sendMessage(ChatColor.RED + "Manhunt is already active or invalid command.");
+                player.sendMessage(ALREADY_ACTIVE_MSG);
             }
-            event.setCancelled(true);
         }
+    }
+
+    private void handleStartCommand(Player player) {
+        if (gameManager.isGameActive()) {
+            player.sendMessage(ALREADY_ACTIVE_MSG);
+            return;
+        }
+
+        // Get all online players
+        List<Player> allPlayers = new ArrayList<>(plugin.getServer().getOnlinePlayers());
+        int totalPlayers = allPlayers.size();
+
+        // Ensure there are enough players
+        if (totalPlayers < 2) {
+            player.sendMessage(NOT_ENOUGH_PLAYERS_MSG);
+            return;
+        }
+
+        // Set the number of hunters to be one less than the number of runners
+        int numberOfHunters = totalPlayers - 1; // At least one runner required
+
+        // Start the game with all players
+        gameManager.startGame(allPlayers, numberOfHunters); // Pass the number of hunters
+        String message = String.format(GAME_STARTED_MSG, gameManager.getHunters(), gameManager.getRunners());
+        Bukkit.broadcastMessage(message); // Broadcast to all players
+
+        // Log the game start event
+        plugin.getLogger().info("Manhunt started with " + numberOfHunters + " hunters and " + (totalPlayers - numberOfHunters) + " runners.");
+    }
+
+    private void handleStopCommand(Player player) {
+        if (!gameManager.isGameActive()) {
+            player.sendMessage(ALREADY_ACTIVE_MSG);
+            return;
+        }
+
+        gameManager.stopGame();
+        player.sendMessage(GAME_STOPPED_MSG);
+
+        // Log the game stop event
+        plugin.getLogger().info("Manhunt stopped by " + player.getName() + ".");
     }
 }

@@ -8,3 +8,16 @@ commands:
   manhunt:
     description: Manage the Manhunt game
     usage: /<command> <start|stop>
+  leaverunner:
+    description: Leave the Runner role
+    usage: /<command>
+  checkhunters:
+    description: Check the current number of hunters
+    usage: /<command>
+  checkrunners:
+    description: Check the current number of runners
+    usage: /<command>
+  listplayers:
+    description: Lists current runners and hunters
+
+

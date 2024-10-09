@@ -10,63 +10,74 @@ import java.util.List;
 import java.util.UUID;
 
 public class PlayerManager {
-
-    private final DynamicManhunt plugin; // Reference to the main plugin
     private final List<UUID> runners; // Store runner players' UUIDs
     private final List<UUID> hunters; // Store hunter players' UUIDs
 
     public PlayerManager(DynamicManhunt plugin) {
-        this.plugin = plugin;
-        this.runners = new ArrayList<>();
-        this.hunters = new ArrayList<>();
+        // Initialize the lists
+        this.runners = Collections.synchronizedList(new ArrayList<>());
+        this.hunters = Collections.synchronizedList(new ArrayList<>());
     }
 
     // Add a player to the list of runners
     public void addRunner(Player player) {
-        runners.add(player.getUniqueId());
-        player.sendMessage(ChatColor.GREEN + "You have been added as a Runner!");
+        if (!runners.contains(player.getUniqueId())) {
+            runners.add(player.getUniqueId());
+            player.sendMessage(ChatColor.GREEN + "You have been added as a Runner!");
+            broadcastRole(player, "Runner");
+        } else {
+            player.sendMessage(ChatColor.YELLOW + "You are already a Runner.");
+        }
     }
 
     // Add a player to the list of hunters
     public void addHunter(Player player) {
-        hunters.add(player.getUniqueId());
-        player.sendMessage(ChatColor.RED + "You have been added as a Hunter!");
+        if (!hunters.contains(player.getUniqueId())) {
+            hunters.add(player.getUniqueId());
+            player.sendMessage(ChatColor.RED + "You have been added as a Hunter!");
+            broadcastRole(player, "Hunter");
+        } else {
+            player.sendMessage(ChatColor.YELLOW + "You are already a Hunter.");
+        }
     }
 
-    // Remove a player from the list of runners
     public void removeRunner(Player player) {
-        runners.remove(player.getUniqueId());
-        player.sendMessage(ChatColor.YELLOW + "You are no longer a Runner.");
+        if (runners.remove(player.getUniqueId())) {
+            player.sendMessage(ChatColor.YELLOW + "You are no longer a Runner.");
+        } else {
+            player.sendMessage(ChatColor.RED + "You are not a Runner.");
+        }
     }
 
     // Remove a player from the list of hunters
     public void removeHunter(Player player) {
-        hunters.remove(player.getUniqueId());
-        player.sendMessage(ChatColor.YELLOW + "You are no longer a Hunter.");
+        if (hunters.remove(player.getUniqueId())) {
+            player.sendMessage(ChatColor.YELLOW + "You are no longer a Hunter.");
+        } else {
+            player.sendMessage(ChatColor.RED + "You are not a Hunter.");
+        }
     }
 
     // Get all runners as Player objects
     public List<Player> getRunners() {
-        List<Player> runnerPlayers = new ArrayList<>();
-        for (UUID uuid : runners) {
-            Player player = Bukkit.getPlayer(uuid);
-            if (player != null) {
-                runnerPlayers.add(player);
-            }
-        }
-        return Collections.unmodifiableList(runnerPlayers); // Return an unmodifiable list
+        return getPlayersFromUUIDs(runners);
     }
 
     // Get all hunters as Player objects
     public List<Player> getHunters() {
-        List<Player> hunterPlayers = new ArrayList<>();
-        for (UUID uuid : hunters) {
+        return getPlayersFromUUIDs(hunters);
+    }
+
+    // Helper method to get Player objects from a list of UUIDs
+    private List<Player> getPlayersFromUUIDs(List<UUID> uuids) {
+        List<Player> players = new ArrayList<>();
+        for (UUID uuid : uuids) {
             Player player = Bukkit.getPlayer(uuid);
             if (player != null) {
-                hunterPlayers.add(player);
+                players.add(player);
             }
         }
-        return Collections.unmodifiableList(hunterPlayers); // Return an unmodifiable list
+        return Collections.unmodifiableList(players);
     }
 
     // Clear all players from the game
@@ -106,5 +117,11 @@ public class PlayerManager {
                 player.sendMessage(ChatColor.GRAY + "You are not participating.");
             }
         }
+    }
+
+    // Broadcast a player's role to all players
+    private void broadcastRole(Player player, String role) {
+        String message = ChatColor.GOLD + player.getName() + " has joined as a " + role + "!";
+        Bukkit.broadcastMessage(message);
     }
 }
