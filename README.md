@@ -3,6 +3,8 @@
 ![Stars](https://img.shields.io/github/stars/logm1lo/DynamicManhunt)
 ![Issues](https://img.shields.io/github/issues/logm1lo/DynamicManhunt)
 
+<img src="https://github.com/user-attachments/assets/cf0fc9c9-781a-45da-abcf-6cf3d7481124" width="300" height="300">
+
 # Dynamic Manhunt
 
 **Dynamic Manhunt** is an action-packed Minecraft plugin that brings a new layer of excitement to the game with a custom manhunt mode. Players take on roles as **hunters** and **runners**, each with distinct abilities and objectives. The game is further enriched with random supply drops, overpowered weapon deliveries, and environmental events that intensify the thrill of the chase.
