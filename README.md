@@ -1,3 +1,5 @@
+![Badges](https://img.shields.io/badge/Status-Active-brightgreen) ![Badges](https://img.shields.io/github/forks/logm1lo/DynamicManhunt) ![Badges](https://img.shields.io/github/stars/logm1lo/DynamicManhunt) ![Badges](https://img.shields.io/github/issues/logm1lo/DynamicManhunt)
+
 # Dynamic Manhunt
 
 Dynamic Manhunt is a Minecraft plugin that transforms the gameplay experience by introducing an exciting manhunt mode where players can take on the roles of hunters and runners. This plugin provides unique abilities, environmental challenges, and random supply drops, enhancing the thrill of the chase and strategic gameplay.
@@ -54,10 +56,6 @@ During development, challenges included balancing the gameplay mechanics to ensu
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Badges
-
-![Badges](https://img.shields.io/badge/Status-Active-brightgreen) ![Badges](https://img.shields.io/github/forks/logm1lo/DynamicManhunt) ![Badges](https://img.shields.io/github/stars/logm1lo/DynamicManhunt) ![Badges](https://img.shields.io/github/issues/logm1lo/DynamicManhunt)
 
 ## How to Contribute to the Project
 
