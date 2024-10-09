@@ -12,6 +12,7 @@ public class DynamicManhunt extends JavaPlugin {
     @Override
     public void onEnable() {
         // Initialize the GameManager instance
+        showStartupMessages();
         this.gameManager = new GameManager(this); // Initialize GameManager
 
         // Example: Register commands or events
@@ -25,6 +26,15 @@ public class DynamicManhunt extends JavaPlugin {
 
         // Log the plugin enabling
         getLogger().info("Dynamic Manhunt Plugin has been enabled!");
+    }
+
+    private void showStartupMessages() {
+        getLogger().info("================================");
+        getLogger().info("        Dynamic Manhunt        ");
+        getLogger().info("          Version 1.0          ");
+        getLogger().info("   Developed by LogMilo        ");
+        getLogger().info("  Enjoy your Manhunt Experience!");
+        getLogger().info("================================");
     }
 
     @Override
