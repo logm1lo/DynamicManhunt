@@ -5,8 +5,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.entity.Item;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.util.Vector;
 
 import java.util.Random;
 import java.util.ArrayList;
@@ -17,19 +17,17 @@ import java.util.Map;
 
 public class GameManager {
     private final DynamicManhunt plugin;
-    private final PlayerManager playerManager;  // PlayerManager instance
+    private final PlayerManager playerManager;
     private boolean gameActive;
     private final List<Player> runners = new ArrayList<>();
     private final List<Player> hunters = new ArrayList<>();
     private final Map<Player, Long> hunterCooldowns = new HashMap<>();
+    private final Map<Player, Long> downedPlayers = new HashMap<>();
+    private final Map<Player, Integer> scores = new HashMap<>();
 
     public GameManager(DynamicManhunt plugin) {
         this.plugin = plugin;
         this.playerManager = new PlayerManager(plugin);
-    }
-
-    public DynamicManhunt getPlugin() {
-        return plugin;
     }
 
     public void startGame(List<Player> allPlayers, int numberOfHunters) {
@@ -37,20 +35,76 @@ public class GameManager {
         gameActive = true;
 
         Bukkit.broadcastMessage("§aDynamic Manhunt has started!");
-
         playerManager.broadcastRoles();
 
         for (Player hunter : hunters) {
-            hunter.setWalkSpeed(0.3f); // Normal speed is 0.2
+            hunter.setWalkSpeed(0.3f);
         }
 
-        // Start periodic events
         startHunterAbilities();
         startRunnerBoosts();
         startRandomEvents();
         startSupplyDrops();
+        startReviveChecks(); // Start revival checks
     }
 
+    // Add a method to stop the game
+    public void stopGame() {
+        gameActive = false;
+        playerManager.clearPlayers();
+        Bukkit.broadcastMessage("§cDynamic Manhunt has ended!");
+
+        // Display scores
+        displayScores();
+    }
+
+    // Show final scores
+    private void displayScores() {
+        for (Player player : scores.keySet()) {
+            player.sendMessage("§e" + player.getName() + " - Score: " + scores.get(player));
+        }
+    }
+
+    public void downPlayer(Player player) {
+        if (runners.contains(player)) {
+            runners.remove(player);
+            downedPlayers.put(player, System.currentTimeMillis());
+            player.sendMessage("§cYou have been downed! You will be revived in 30 seconds.");
+            Bukkit.broadcastMessage(player.getName() + " has been downed!");
+        }
+    }
+
+    private void startReviveChecks() {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (!gameActive) return;
+
+                for (Player runner : new ArrayList<>(downedPlayers.keySet())) {
+                    long downedTime = System.currentTimeMillis() - downedPlayers.get(runner);
+                    if (downedTime >= 30000) { // If downed for more than 30 seconds
+                        Bukkit.broadcastMessage(runner.getName() + " has been revived!");
+                        runners.add(runner);
+                        downedPlayers.remove(runner);
+                        runner.teleport(getRandomSpawnLocation());
+                        incrementScore(runner); // Increment score for revival
+                    }
+                }
+            }
+        }.runTaskTimer(plugin, 0L, 20L); // Check every second
+    }
+
+    private void incrementScore(Player player) {
+        scores.put(player, scores.getOrDefault(player, 0) + 1);
+    }
+
+    private Location getRandomSpawnLocation() {
+        World world = Bukkit.getWorlds().getFirst();
+        double x = (Math.random() * 200) - 100;
+        double z = (Math.random() * 200) - 100;
+        int y = world.getHighestBlockYAt((int) x, (int) z) + 1;
+        return new Location(world, x, y, z);
+    }
 
     public void removeHunter(Player player) {
         hunters.remove(player);
@@ -73,13 +127,22 @@ public class GameManager {
     public boolean isRunner(Player player) {
         return runners.contains(player);
     }
+
+    public void addHunter(Player player) {
+        if (!hunters.contains(player)) {
+            hunters.add(player);
+            player.sendMessage("You are now a Hunter!");
+        }
+    }
+
     private void selectPlayers(List<Player> allPlayers, int numberOfHunters) {
         // Shuffle the list and assign roles
+        Collections.shuffle(allPlayers);
         for (int i = 0; i < allPlayers.size(); i++) {
             if (i < numberOfHunters) {
-                playerManager.addHunter(allPlayers.get(i));  // Add to hunters
+                playerManager.addHunter(allPlayers.get(i));
             } else {
-                playerManager.addRunner(allPlayers.get(i));  // Add to runners
+                playerManager.addRunner(allPlayers.get(i));
             }
         }
 
@@ -89,12 +152,6 @@ public class GameManager {
         for (Player player : runners) {
             player.sendMessage("§aYou are a Runner!");
         }
-    }
-
-    public void stopGame() {
-        gameActive = false;
-        playerManager.clearPlayers(); // Clear all players at the end of the game
-        Bukkit.broadcastMessage("§cDynamic Manhunt has ended!");
     }
 
     public boolean isGameActive() {
@@ -211,59 +268,39 @@ public class GameManager {
                 if (!gameActive || runners.isEmpty()) return;
 
                 Player targetedRunner = runners.get(new Random().nextInt(runners.size()));
-                Bukkit.broadcastMessage(ChatColor.YELLOW + "A supply drop has occurred near " + targetedRunner.getName() + "!");
+                Bukkit.broadcastMessage(ChatColor.YELLOW + "A supply drop is coming for " + targetedRunner.getName() + "!");
 
+                ItemStack itemStack = getRandomOverpoweredItem();
                 Location dropLocation = getRandomDropLocationNearPlayer(targetedRunner);
-                ItemStack randomItem = getRandomOverpoweredItem();
-                targetedRunner.getWorld().dropItemNaturally(dropLocation, randomItem);
-
-                Bukkit.getScheduler().runTaskLater(plugin, () -> removeExpiredItems(dropLocation), getRandomTime(600, 900));
+                removeExpiredItems(dropLocation); // Remove nearby items before dropping new ones
+                Item droppedItem = targetedRunner.getWorld().dropItem(dropLocation, itemStack);
+                droppedItem.setVelocity(new Vector(0, 0, 0)); // Stop item from falling
             }
-        }.runTaskTimer(plugin, 0L, 1200L);
+        }.runTaskTimer(plugin, 0L, 1200L); // Drop every minute
     }
 
     private ItemStack getRandomOverpoweredItem() {
         Random random = new Random();
-        int randomIndex = random.nextInt(14);
+        int randomIndex = random.nextInt(15); // Adjusting to 15 for the additional items
 
-        switch (randomIndex) {
-            case 0:
-                return new ItemStack(Material.NETHERITE_SWORD);
-            case 1:
-                return new ItemStack(Material.NETHERITE_AXE);
-            case 2:
-                return new ItemStack(Material.ENDER_PEARL, 5);
-            case 3:
-                return new ItemStack(Material.ENDER_EYE, 64);
-            case 4:
-                return new ItemStack(Material.NETHERITE_HELMET);
-            case 5:
-                return new ItemStack(Material.NETHERITE_CHESTPLATE);
-            case 6:
-                return new ItemStack(Material.NETHERITE_LEGGINGS);
-            case 7:
-                return new ItemStack(Material.NETHERITE_BOOTS);
-            case 8:
-                return new ItemStack(Material.TRIDENT);
-            case 9:
-                return new ItemStack(Material.WATER_BUCKET);
-            case 10:
-                return new ItemStack(Material.ENCHANTED_GOLDEN_APPLE, 8);
-            case 11:
-                ItemStack elytra = new ItemStack(Material.ELYTRA);
-                ItemStack fireworks = new ItemStack(Material.FIREWORK_ROCKET, 64);
-                return combineItems(elytra, fireworks);
-            case 12:
-                return new ItemStack(Material.SPLASH_POTION, 4);
-            case 13:
-                ItemStack endCrystal = new ItemStack(Material.END_CRYSTAL, 2);
-                ItemStack obsidian = new ItemStack(Material.OBSIDIAN, 5);
-                return combineItems(endCrystal, obsidian);
-            case 14:
-                return new ItemStack(Material.POTION, 3);
-            default:
-                return new ItemStack(Material.STICK);
-        }
+        return switch (randomIndex) {
+            case 0 -> new ItemStack(Material.DIAMOND_SWORD);
+            case 1 -> new ItemStack(Material.ENCHANTED_GOLDEN_APPLE);
+            case 2 -> new ItemStack(Material.NETHERITE_HELMET);
+            case 3 -> new ItemStack(Material.NETHERITE_CHESTPLATE);
+            case 4 -> new ItemStack(Material.NETHERITE_LEGGINGS);
+            case 5 -> new ItemStack(Material.NETHERITE_BOOTS);
+            case 6 -> new ItemStack(Material.BOW);
+            case 7 -> new ItemStack(Material.ARROW, 64);
+            case 8 -> new ItemStack(Material.POTION);
+            case 9 -> new ItemStack(Material.ENDER_PEARL, 5);
+            case 10 -> new ItemStack(Material.GOLDEN_APPLE, 5);
+            case 11 -> new ItemStack(Material.TNT, 5);
+            case 12 -> new ItemStack(Material.FIREWORK_ROCKET, 3);
+            case 13 -> new ItemStack(Material.GOLD_BLOCK, 5);
+            case 14 -> new ItemStack(Material.DIAMOND_BLOCK, 3);
+            default -> new ItemStack(Material.STICK);
+        };
     }
 
     private Location getRandomDropLocationNearPlayer(Player player) {
@@ -287,9 +324,5 @@ public class GameManager {
         for (Item item : dropLocation.getWorld().getNearbyEntitiesByType(Item.class, dropLocation, 5)) {
             item.remove(); // Remove the item entity
         }
-    }
-
-    private ItemStack combineItems(ItemStack... items) {
-        return items[0];
     }
 }

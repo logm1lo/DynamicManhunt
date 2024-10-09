@@ -31,17 +31,17 @@ public class ManhuntListener implements Listener {
                 player.sendMessage("Manhunt stopped!");
             } else if (args.length > 1 && args[1].equalsIgnoreCase("help")) {
                 showHelpCommands(player);
-            } else if (args.length > 2 && args[1].equalsIgnoreCase("addhunter")) {
+            } else if (args.length > 2 && args[1].equalsIgnoreCase("addHunter")) {
                 addHunter(player, args[2]);
-            } else if (args.length > 2 && args[1].equalsIgnoreCase("removehunter")) {
+            } else if (args.length > 2 && args[1].equalsIgnoreCase("removeHunter")) {
                 removeHunter(player, args[2]);
-            } else if (args.length > 1 && args[1].equalsIgnoreCase("listhunters")) {
+            } else if (args.length > 1 && args[1].equalsIgnoreCase("listHunters")) {
                 listHunters(player);
-            } else if (args.length > 2 && args[1].equalsIgnoreCase("addrunner")) {
+            } else if (args.length > 2 && args[1].equalsIgnoreCase("addRunner")) {
                 addRunner(player, args[2]);
-            } else if (args.length > 2 && args[1].equalsIgnoreCase("removerunner")) {
+            } else if (args.length > 2 && args[1].equalsIgnoreCase("removeRunner")) {
                 removeRunner(player, args[2]);
-            } else if (args.length > 1 && args[1].equalsIgnoreCase("listrunners")) {
+            } else if (args.length > 1 && args[1].equalsIgnoreCase("listRunners")) {
                 listRunners(player);
             } else {
                 player.sendMessage("Invalid command or game already active.");
@@ -54,12 +54,12 @@ public class ManhuntListener implements Listener {
         player.sendMessage("=== Manhunt Commands ===");
         player.sendMessage("/manhunt start - Start the manhunt game.");
         player.sendMessage("/manhunt stop - Stop the active manhunt game.");
-        player.sendMessage("/manhunt addhunter <player> - Add a hunter.");
-        player.sendMessage("/manhunt removehunter <player> - Remove a hunter.");
-        player.sendMessage("/manhunt listhunters - List all hunters.");
-        player.sendMessage("/manhunt addrunning <player> - Add a runner.");
-        player.sendMessage("/manhunt removerunner <player> - Remove a runner.");
-        player.sendMessage("/manhunt listrunners - List all runners.");
+        player.sendMessage("/manhunt addHunter <player> - Add a hunter.");
+        player.sendMessage("/manhunt removeHunter <player> - Remove a hunter.");
+        player.sendMessage("/manhunt listHunters - List all hunters.");
+        player.sendMessage("/manhunt addRunning <player> - Add a runner.");
+        player.sendMessage("/manhunt removeRunner <player> - Remove a runner.");
+        player.sendMessage("/manhunt listRunners - List all runners.");
         player.sendMessage("/manhunt help - Show this help message.");
         player.sendMessage("========================");
     }
