@@ -10,11 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ManhuntListener implements Listener {
-
     private final GameManager gameManager;
+    private final DynamicManhunt plugin; // Add this line
 
-    public ManhuntListener(GameManager gameManager) {
+    public ManhuntListener(GameManager gameManager, DynamicManhunt plugin) { // Update constructor
         this.gameManager = gameManager;
+        this.plugin = plugin; // Initialize the plugin
     }
 
     @EventHandler
