@@ -150,12 +150,14 @@ public class GameManager {
     }
 
     private Location getRandomSpawnLocation() {
-        World world = Bukkit.getWorlds().getFirst();
+        // Fixing the method to access the first world correctly
+        World world = Bukkit.getWorlds().get(0); // Get the first world
         double x = (Math.random() * 200) - 100;
         double z = (Math.random() * 200) - 100;
         int y = world.getHighestBlockYAt((int) x, (int) z) + 1;
         return new Location(world, x, y, z);
     }
+
 
     public void removeHunter(Player player) {
         hunters.remove(player);
