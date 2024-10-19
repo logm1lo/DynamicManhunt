@@ -20,10 +20,19 @@ public class DynamicManhunt extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ManhuntListener(this), this); // Pass only 'this'
         getServer().getPluginManager().registerEvents(new CompassTrackingManager(gameManager), this);
         getServer().getPluginManager().registerEvents(new GameListener(this, gameManager), this);
+
+        if (getCommand("checkhunters") != null) {
+            Objects.requireNonNull(getCommand("checkhunters")).setExecutor(new CheckHunterCountCommand(playerManager));
+        } else {
+            getLogger().warning("Command 'checkhunters' not found in plugin.yml");
+        }
+
+        // Register commands
         Objects.requireNonNull(getCommand("checkhunters")).setExecutor(new CheckHunterCountCommand(playerManager));
         Objects.requireNonNull(getCommand("checkrunners")).setExecutor(new CheckRunnerCountCommand(playerManager));
         Objects.requireNonNull(getCommand("leaverunner")).setExecutor(new LeaveRunnerCommand(playerManager));
         Objects.requireNonNull(getCommand("listplayers")).setExecutor(new ListPlayersCommand(playerManager));
+
         // Load configuration settings
         loadConfigSettings();
 
@@ -32,18 +41,21 @@ public class DynamicManhunt extends JavaPlugin {
     }
 
     private void showStartupMessages() {
-        getLogger().info("================================");
-        getLogger().info("        Dynamic Manhunt         ");
-        getLogger().info("          Version 1.0           ");
-        getLogger().info("      Developed by logm1lo      ");
-        getLogger().info("  Enjoy your Manhunt Experience!");
-        getLogger().info("================================");
+        getLogger().info("===============================");
+        getLogger().info("        Dynamic Manhunt");
+        getLogger().info("           Version 1.0");
+        getLogger().info("       Developed by logm1lo");
+        getLogger().info("   Enjoy your Manhunt Experience!");
+        getLogger().info("===============================");
+
+        // Ensure the default config is saved
+        saveDefaultConfig();
     }
 
     @Override
     public void onDisable() {
         // Ensure the game is stopped on disable to avoid issues
-        if (gameManager.isGameActive()) {
+        if (gameManager != null && gameManager.isGameActive()) {
             gameManager.stopGame();
             getLogger().info("Stopped active Manhunt game.");
         }
