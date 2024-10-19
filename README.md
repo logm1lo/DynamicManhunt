@@ -53,6 +53,7 @@ Once the plugin is installed, you can manage the game with the following command
 ### ⚡ Commands:
 - `/manhunt start` - Initiates the Dynamic Manhunt game.
 - `/manhunt stop` - Stops the active manhunt game.
+- `/manhunt help` - Show the available commands.
   
 **Random supply drops** will occur throughout the game, delivering powerful weapons and items to players at strategic moments.
 
