@@ -13,6 +13,7 @@ import java.util.*;
 
 import static org.bukkit.Bukkit.getLogger;
 
+
 public class GameManager {
     private final DynamicManhunt plugin;
     private final PlayerManager playerManager;
@@ -24,6 +25,7 @@ public class GameManager {
     private final Map<Player, Integer> scores = new HashMap<>();
     private final Map<Player, Long> compassCooldowns = new HashMap<>();
     private final Map<Location, Material> originalBlockStates = new HashMap<>(); // To store original block states
+    private final Random random = new Random();
 
     public GameManager(DynamicManhunt plugin) {
         this.plugin = plugin;
@@ -54,7 +56,25 @@ public class GameManager {
         startSupplyDrops();
         startReviveChecks();
     }
-
+    private final List<ItemStack> overpoweredItems = Arrays.asList(
+            new ItemStack(Material.NETHERITE_SWORD),
+            new ItemStack(Material.NETHERITE_AXE),
+            new ItemStack(Material.ENDER_PEARL, 5),
+            new ItemStack(Material.ENDER_EYE, 64),
+            new ItemStack(Material.NETHERITE_HELMET),
+            new ItemStack(Material.NETHERITE_CHESTPLATE),
+            new ItemStack(Material.NETHERITE_LEGGINGS),
+            new ItemStack(Material.NETHERITE_BOOTS),
+            new ItemStack(Material.TRIDENT),
+            new ItemStack(Material.WATER_BUCKET),
+            new ItemStack(Material.ENCHANTED_GOLDEN_APPLE, 8),
+            new ItemStack(Material.ELYTRA),
+            new ItemStack(Material.FIREWORK_ROCKET, 64),
+            new ItemStack(Material.SPLASH_POTION, 4),
+            new ItemStack(Material.END_CRYSTAL, 2),
+            new ItemStack(Material.OBSIDIAN, 5),
+            new ItemStack(Material.POTION, 3)
+    );
     private void giveCompassToHunter(Player hunter) {
         ItemStack compass = new ItemStack(Material.COMPASS);
         hunter.getInventory().addItem(compass);
@@ -275,7 +295,7 @@ public class GameManager {
                     }
                 }
             }
-        }.runTaskTimer(plugin, 0L, 400L); // Adjust the frequency as desired
+        }.runTaskTimer(plugin, 0L, 4000L); // Adjust the frequency as desired
     }
     private Player getRandomRunner() {
         if (runners.isEmpty()) {
@@ -347,18 +367,70 @@ public class GameManager {
                     dropSupplyPackage();
                 }
             }
-        }.runTaskTimer(plugin, 0L, 200L); // Adjust frequency as needed
+        }.runTaskTimer(plugin, 0L, 1300L); // Adjust frequency as needed
     }
 
     private void dropSupplyPackage() {
-        Location dropLocation = getRandomSpawnLocation();
+        if (runners.isEmpty()) {
+            return; // No runners available, so no supply drop
+        }
+
+        // Select a random runner from the list of runners
+        Player randomRunner = runners.get(new Random().nextInt(runners.size()));
+        Location runnerLocation = randomRunner.getLocation();
+
+        // Generate a random offset near the runner (within a 50-block radius)
+        double xOffset = (Math.random() * 100) - 50;
+        double zOffset = (Math.random() * 100) - 50;
+
+        Location dropLocation = runnerLocation.clone().add(xOffset, 0, zOffset);
         World world = dropLocation.getWorld();
+
         if (world != null) {
-            world.dropItem(dropLocation, new ItemStack(Material.CHEST)); // Example item
-            world.dropItem(dropLocation, new ItemStack(Material.GOLDEN_APPLE)); // Example item
-            Bukkit.broadcastMessage("§aA supply drop has occurred at " + dropLocation.getBlockX() + ", " + dropLocation.getBlockZ() + "!");
+            // Ensure the chest spawns at the highest solid block at the x, z coordinates
+            int highestY = world.getHighestBlockYAt(dropLocation);
+            dropLocation.setY(highestY + 1); // Spawn chest 1 block above ground
+
+            // Create a chest at the drop location
+            Block block = world.getBlockAt(dropLocation);
+            block.setType(Material.CHEST);
+            if (block.getState() instanceof Chest chest) {
+                Inventory inventory = chest.getInventory();
+
+                // Add random overpowered items to the chest
+                inventory.addItem(getRandomOverpoweredItem());
+
+                // Broadcast the supply drop location
+                Bukkit.broadcastMessage("§aA supply drop has occurred near a runner at " + dropLocation.getBlockX() + ", " + dropLocation.getBlockZ() + "!");
+            }
         }
     }
+
+    private ItemStack getRandomOverpoweredItem() {
+        List<ItemStack> overpoweredItems = Arrays.asList(
+                new ItemStack(Material.NETHERITE_SWORD),
+                new ItemStack(Material.NETHERITE_AXE),
+                new ItemStack(Material.ENDER_PEARL, 4),
+                new ItemStack(Material.ENDER_EYE, 64),
+                new ItemStack(Material.NETHERITE_HELMET),
+                new ItemStack(Material.NETHERITE_CHESTPLATE),
+                new ItemStack(Material.NETHERITE_LEGGINGS),
+                new ItemStack(Material.NETHERITE_BOOTS),
+                new ItemStack(Material.TRIDENT),
+                new ItemStack(Material.WATER_BUCKET),
+                new ItemStack(Material.ENCHANTED_GOLDEN_APPLE, 8),
+                new ItemStack(Material.ELYTRA),
+                new ItemStack(Material.FIREWORK_ROCKET, 64),
+                new ItemStack(Material.SPLASH_POTION, 4),
+                new ItemStack(Material.END_CRYSTAL, 2),
+                new ItemStack(Material.OBSIDIAN, 5),
+                new ItemStack(Material.POTION, 3)
+        );
+
+        // Return a random overpowered item from the list
+        return overpoweredItems.get(new Random().nextInt(overpoweredItems.size()));
+    }
+
 
     private void resetWorld() {
         originalBlockStates.forEach((location, material) -> location.getBlock().setType(material));
