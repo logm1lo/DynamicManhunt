@@ -43,7 +43,7 @@ public class DynamicManhunt extends JavaPlugin {
     private void showStartupMessages() {
         getLogger().info("===============================");
         getLogger().info("        Dynamic Manhunt");
-        getLogger().info("           Version 1.0");
+        getLogger().info("           Version 1.2.0");
         getLogger().info("       Developed by logm1lo");
         getLogger().info("   Enjoy your Manhunt Experience!");
         getLogger().info("===============================");
