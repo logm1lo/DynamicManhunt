@@ -6,12 +6,19 @@ import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.Location;
+import org.bukkit.Sound;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+
+
 
 import java.util.*;
-
-import static org.bukkit.Bukkit.getLogger;
+import java.util.logging.Logger;
 
 
 public class GameManager {
@@ -31,6 +38,7 @@ public class GameManager {
         this.plugin = plugin;
         this.playerManager = new PlayerManager(plugin);
     }
+
 
     public void startGame(List<Player> allPlayers, int numberOfHunters) {
         saveOriginalWorldState(); // Save the original world state at the start of the game
@@ -56,25 +64,6 @@ public class GameManager {
         startSupplyDrops();
         startReviveChecks();
     }
-    private final List<ItemStack> overpoweredItems = Arrays.asList(
-            new ItemStack(Material.NETHERITE_SWORD),
-            new ItemStack(Material.NETHERITE_AXE),
-            new ItemStack(Material.ENDER_PEARL, 5),
-            new ItemStack(Material.ENDER_EYE, 64),
-            new ItemStack(Material.NETHERITE_HELMET),
-            new ItemStack(Material.NETHERITE_CHESTPLATE),
-            new ItemStack(Material.NETHERITE_LEGGINGS),
-            new ItemStack(Material.NETHERITE_BOOTS),
-            new ItemStack(Material.TRIDENT),
-            new ItemStack(Material.WATER_BUCKET),
-            new ItemStack(Material.ENCHANTED_GOLDEN_APPLE, 8),
-            new ItemStack(Material.ELYTRA),
-            new ItemStack(Material.FIREWORK_ROCKET, 64),
-            new ItemStack(Material.SPLASH_POTION, 4),
-            new ItemStack(Material.END_CRYSTAL, 2),
-            new ItemStack(Material.OBSIDIAN, 5),
-            new ItemStack(Material.POTION, 3)
-    );
     private void giveCompassToHunter(Player hunter) {
         ItemStack compass = new ItemStack(Material.COMPASS);
         hunter.getInventory().addItem(compass);
@@ -267,13 +256,44 @@ public class GameManager {
         }.runTaskTimer(plugin, 0L, 600L);
     }
 
+    private void earthquakeEffect(Location location) {
+        World world = location.getWorld();
+        if (world == null) return;
+
+        double radius = 5.0;
+
+        // Randomly target either runners or hunters
+        boolean targetRunners = random.nextBoolean();
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            boolean isTargetPlayer = targetRunners
+                    ? playerManager.isRunner(player)   // Affect runners if targeting runners
+                    : playerManager.isHunter(player);  // Affect hunters if targeting hunters
+
+            if (isTargetPlayer && player.getLocation().distance(location) <= radius) {
+                player.sendMessage("§eThe ground shakes beneath you!");
+                player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_FLAP, 1.0f, 1.0f);
+
+                // Apply earthquake effects (e.g., confusion)
+                player.addPotionEffect(new PotionEffect(PotionEffectType.NAUSEA, 100, 1)); // Example confusion effect
+            }
+        }
+
+        // Announce which group (runners or hunters) is targeted
+        if (targetRunners) {
+            Bukkit.broadcastMessage("§cThe earthquake targets runners!");
+        } else {
+            Bukkit.broadcastMessage("§cThe earthquake targets hunters!");
+        }
+    }
+
     private void startRandomEvents() {
         new BukkitRunnable() {
             @Override
             public void run() {
                 if (!gameActive) return;
 
-                int randomEvent = new Random().nextInt(3);
+                int randomEvent = random.nextInt(3);
                 switch (randomEvent) {
                     case 0 -> {
                         Player randomRunner = getRandomRunner();
@@ -284,7 +304,7 @@ public class GameManager {
                     }
                     case 1 -> {
                         Bukkit.broadcastMessage("§cAn earthquake has shaken the world!");
-                        earthquakeEffect(getRandomEventLocation());
+                        earthquakeEffect(getRandomEventLocation()); // Randomly targets either runners or hunters
                     }
                     case 2 -> {
                         Player randomPlayer = getRandomPlayer();
@@ -297,6 +317,7 @@ public class GameManager {
             }
         }.runTaskTimer(plugin, 0L, 4000L); // Adjust the frequency as desired
     }
+
     private Player getRandomRunner() {
         if (runners.isEmpty()) {
             return null; // No runners to choose from
@@ -338,16 +359,32 @@ public class GameManager {
         }
     }
 
-    private void earthquakeEffect(Location location) {
-        // Example earthquake logic
+    private void earthquakeEffect(Location location, boolean targetRunners) {
+        // Get the world where the earthquake happens
         World world = location.getWorld();
         if (world == null) return;
 
+        // Define the radius of the earthquake effect
+        double radius = 5.0;
+
+        // Loop through all online players and apply the effect only if within the radius
         for (Player player : Bukkit.getOnlinePlayers()) {
-            player.sendMessage("§eThe ground shakes beneath you!");
-            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_FLAP, 1.0f, 1.0f);
+            // Check if the player is a runner or a hunter based on the targetRunners flag
+            boolean isTargetPlayer = targetRunners
+                    ? playerManager.isRunner(player)   // Replace with your actual check for runners
+                    : playerManager.isHunter(player);  // Replace with your actual check for hunters
+
+            // Only affect the players within 5 blocks of the earthquake location and who are either runners or hunters
+            if (isTargetPlayer && player.getLocation().distance(location) <= radius) {
+                player.sendMessage("§eThe ground shakes beneath you!");
+                player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_FLAP, 1.0f, 1.0f);
+
+                // Add additional rumbling or shaking effects here (e.g., particles, block movements, etc.)
+                player.addPotionEffect(new PotionEffect(PotionEffectType.NAUSEA, 100, 1)); // Example confusion effect
+            }
         }
     }
+
 
     private void strikeLightning(Player player) {
         if (player != null) {
@@ -421,15 +458,53 @@ public class GameManager {
                 new ItemStack(Material.ENCHANTED_GOLDEN_APPLE, 8),
                 new ItemStack(Material.ELYTRA),
                 new ItemStack(Material.FIREWORK_ROCKET, 64),
-                new ItemStack(Material.SPLASH_POTION, 4),
                 new ItemStack(Material.END_CRYSTAL, 2),
                 new ItemStack(Material.OBSIDIAN, 5),
-                new ItemStack(Material.POTION, 3)
+                createPotionOfStrength(),   // Random Potion of Strength
+                createSplashPotionOfSlowness(), // Random Splash Potion of Slowness
+                createSplashPotionOfWeakness(), // Random Splash Potion of Weakness
+                createPotionOfSwiftness()  // Random Potion of Swiftness
         );
 
-        // Return a random overpowered item from the list
         return overpoweredItems.get(new Random().nextInt(overpoweredItems.size()));
     }
+
+    private ItemStack createPotionOfStrength() {
+        ItemStack potion = new ItemStack(Material.POTION, getRandomQuantity()); // Set random quantity
+        PotionMeta potionMeta = (PotionMeta) potion.getItemMeta(); // Get potion's meta
+        potionMeta.addCustomEffect(new PotionEffect(PotionEffectType.STRENGTH, 3600, 1), true); // Add Strength effect
+        potion.setItemMeta(potionMeta); // Apply the meta to the item
+        return potion;
+    }
+
+    private ItemStack createPotionOfSwiftness() {
+        ItemStack potion = new ItemStack(Material.POTION, getRandomQuantity()); // Set random quantity
+        PotionMeta potionMeta = (PotionMeta) potion.getItemMeta(); // Get potion's meta
+        potionMeta.addCustomEffect(new PotionEffect(PotionEffectType.SPEED, 3600, 1), true); // Add Swiftness effect
+        potion.setItemMeta(potionMeta); // Apply the meta to the item
+        return potion;
+    }
+
+    private ItemStack createSplashPotionOfSlowness() {
+        ItemStack potion = new ItemStack(Material.SPLASH_POTION, getRandomQuantity()); // Set random quantity
+        PotionMeta potionMeta = (PotionMeta) potion.getItemMeta(); // Get potion's meta
+        potionMeta.addCustomEffect(new PotionEffect(PotionEffectType.SLOWNESS, 3600, 1), true); // Add Slowness effect
+        potion.setItemMeta(potionMeta); // Apply the meta to the item
+        return potion;
+    }
+
+    private ItemStack createSplashPotionOfWeakness() {
+        ItemStack potion = new ItemStack(Material.SPLASH_POTION, getRandomQuantity()); // Set random quantity
+        PotionMeta potionMeta = (PotionMeta) potion.getItemMeta(); // Get potion's meta
+        potionMeta.addCustomEffect(new PotionEffect(PotionEffectType.WEAKNESS, 3600, 1), true); // Add Weakness effect
+        potion.setItemMeta(potionMeta); // Apply the meta to the item
+        return potion;
+    }
+
+    private int getRandomQuantity() {
+        return new Random().nextInt(4) + 2; // Generates a random number between 2 and 5 (inclusive)
+    }
+
 
 
     private void resetWorld() {
@@ -442,12 +517,9 @@ public class GameManager {
         new BukkitRunnable() {
             @Override
             public void run() {
-                // This is where you perform the world state saving.
                 try {
-                    // Create a HashMap to store original block states
                     HashMap<Location, Material> originalState = new HashMap<>();
 
-                    // Example logic to save block states in a defined area
                     int startX = -100; // Replace with your start coordinates
                     int endX = 100; // Replace with your end coordinates
                     int startZ = -100; // Replace with your start coordinates
@@ -455,24 +527,33 @@ public class GameManager {
 
                     for (int x = startX; x <= endX; x++) {
                         for (int z = startZ; z <= endZ; z++) {
-                            // Assuming you're saving the world at the height of 64
-                            Location loc = new Location(Bukkit.getWorld("world"), x, 64, z); // Adjust world name and height as needed
+                            Location loc = new Location(Bukkit.getWorld("world"), x, 64, z);
                             Material blockType = loc.getBlock().getType();
-
-                            // Store the block state in the HashMap
                             originalState.put(loc, blockType);
                         }
                     }
 
-                    // Optionally, log the number of blocks saved
-                    Bukkit.getLogger().info("Saved original world state: " + originalState.size() + " blocks.");
-
-                    // Additional logic to handle the originalState if needed
+                    getPluginLogger().info("Saved original world state: " + originalState.size() + " blocks.");
                 } catch (Exception e) {
-                    Bukkit.getLogger().severe("Failed to save original world state: " + e.getMessage());
-                    e.printStackTrace(); // Print stack trace for debugging
+                    logError("Failed to save original world state", e);
                 }
             }
-        }.runTaskAsynchronously(plugin); // Run the task asynchronously
+        }.runTaskAsynchronously(plugin);
+    }
+
+    // Logging utility method with stack trace logging
+    private void logError(String message, Throwable throwable) {
+        Logger logger = getPluginLogger();
+        logger.severe(message);
+        logger.severe("Exception: " + throwable.toString()); // Log the exception message
+
+        // Log the stack trace in a structured way
+        for (StackTraceElement element : throwable.getStackTrace()) {
+            logger.severe("\tat " + element); // Log each element of the stack trace
+        }
+    }
+
+    private Logger getPluginLogger() {
+        return plugin.getLogger();
     }
 }
