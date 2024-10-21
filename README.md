@@ -54,6 +54,13 @@ Once the plugin is installed, you can manage the game with the following command
 - `/manhunt start` - Initiates the Dynamic Manhunt game.
 - `/manhunt stop` - Stops the active manhunt game.
 - `/manhunt help` - Show the available commands.
+- `/manhunt addhunter <player>` - Add player as hunter.
+- `/manhunt addrunner <player>` - Add player as runner.
+- `/manhunt removehunter <player>` - Remove a hunter.
+- `/manhunt listhunters` - List all hunters.
+- `/manhunt addrunner <player>` - Add a runner.
+- `/manhunt removerunner <player>` - Remove a runner.
+- `/manhunt listrunners` - List all runners.
   
 **Random supply drops** will occur throughout the game, delivering powerful weapons and items to players at strategic moments.
 
@@ -73,7 +80,7 @@ Below is a list of the powerful items that may appear in the game’s supply dro
 |----------------------------------|--------------------------------------------------------------------|
 | **Netherite Sword**              | The strongest melee weapon available, delivering heavy damage.      |
 | **Netherite Axe**                | A powerful tool that deals critical damage in combat.              |
-| **Ender Pearls (x5)**            | Allows for quick teleportation, ideal for escaping or chasing.     |
+| **Ender Pearls (x4)**            | Allows for quick teleportation, ideal for escaping or chasing.     |
 | **Ender Eyes (x64)**             | Essential for fast navigation in the world.                        |
 | **Netherite Helmet**             | Offers unmatched head protection.                                  |
 | **Netherite Chestplate**         | Provides superior defense with enhanced durability.                |
@@ -82,12 +89,18 @@ Below is a list of the powerful items that may appear in the game’s supply dro
 | **Trident**                      | Versatile for both melee and ranged attacks, useful on land or water.|
 | **Water Bucket**                 | Use for clutch escapes or instant water sources.                   |
 | **Enchanted Golden Apples (x8)** | Grants powerful buffs, including regeneration and resistance.       |
-| **Elytra & Fireworks (x64)**     | Allows for high-speed flight and aerial maneuvers.                 |
-| **Splash Potion (x4)**           | Throwable potions with various effects.                            |
+| **Elytra**                       | Allows for high-speed flight and aerial maneuvers.                 |
+| **Fireworks (x64)**              | Useful for high-speed flight and celebration.                      |
 | **End Crystals (x2) & Obsidian (x5)** | Set up explosive traps using these dangerous crystals.          |
-| **Potion (x3)**                  | Various potions offering buffs or debuffs.                         |
+| **Potion of Strength (random)**      | Grants a temporary boost to melee damage.                          |
+| **Potion of Swiftness (random)**     | Grants a temporary boost to movement speed.                        |
+| **Splash Potion of Slowness (random)** | Throws a potion that slows down enemies.                         |
+| **Splash Potion of Weakness (random)** | Throws a potion that weakens enemies.                            |
 
-The randomization of supply drops ensures no two games are alike, with the race for these items often determining the course of the match.
+### Notes:
+- Each potion appears in a random quantity ranging from 2 to 5, while Ender Pearls appear in quantities of 4 and other items may appear as specified.
+- The items and effects enhance gameplay, offering unique strategies for players during chases and battles.
+- The randomization of supply drops ensures no two games are alike, with the race for these items often determining the course of the match.
 
 ## 🙏 Credits
 
