@@ -54,6 +54,13 @@ Once the plugin is installed, you can manage the game with the following command
 - `/manhunt start` - Initiates the Dynamic Manhunt game.
 - `/manhunt stop` - Stops the active manhunt game.
 - `/manhunt help` - Show the available commands.
+- `/manhunt addhunter <player>` - Add player as hunter.
+- `/manhunt addrunner <player>` - Add player as runner.
+- `/manhunt removehunter <player>` - Remove a hunter.
+- `/manhunt listhunters` - List all hunters.
+- `/manhunt addrunner <player>` - Add a runner.
+- `/manhunt removerunner <player>` - Remove a runner.
+- `/manhunt listrunners` - List all runners.
   
 **Random supply drops** will occur throughout the game, delivering powerful weapons and items to players at strategic moments.
 
