@@ -444,7 +444,7 @@ public class GameManager {
     }
 
     private ItemStack getRandomOverpoweredItem() {
-        List<ItemStack> overpoweredItems = Arrays.asList(
+        List<Object> overpoweredItems = Arrays.asList(
                 new ItemStack(Material.NETHERITE_SWORD),
                 new ItemStack(Material.NETHERITE_AXE),
                 new ItemStack(Material.ENDER_PEARL, 4),
@@ -458,15 +458,32 @@ public class GameManager {
                 new ItemStack(Material.ENCHANTED_GOLDEN_APPLE, 8),
                 new ItemStack(Material.ELYTRA),
                 new ItemStack(Material.FIREWORK_ROCKET, 64),
-                new ItemStack(Material.END_CRYSTAL, 2),
-                new ItemStack(Material.OBSIDIAN, 5),
-                createPotionOfStrength(),   // Random Potion of Strength
-                createSplashPotionOfSlowness(), // Random Splash Potion of Slowness
-                createSplashPotionOfWeakness(), // Random Splash Potion of Weakness
-                createPotionOfSwiftness()  // Random Potion of Swiftness
+                createObsidianAndEndCrystalBundle(),  // Obsidian and End Crystal dropped together
+                createPotionOfStrength(),             // Random Potion of Strength
+                createSplashPotionOfSlowness(),       // Random Splash Potion of Slowness
+                createSplashPotionOfWeakness(),       // Random Splash Potion of Weakness
+                createPotionOfSwiftness()             // Random Potion of Swiftness
         );
 
-        return overpoweredItems.get(new Random().nextInt(overpoweredItems.size()));
+        Object randomItem = overpoweredItems.get(new Random().nextInt(overpoweredItems.size()));
+
+        if (randomItem instanceof ItemStack[]) {
+            // If the random item is an array (Obsidian and End Crystal), drop them both
+            for (ItemStack item : (ItemStack[]) randomItem) {
+                // Handle dropping the array of items
+                return item; // or handle multiple items as per your game logic
+            }
+        } else {
+            return (ItemStack) randomItem;
+        }
+
+        return null;
+    }
+
+    private ItemStack[] createObsidianAndEndCrystalBundle() {
+        ItemStack obsidian = new ItemStack(Material.OBSIDIAN, 5);  // 5 Obsidian
+        ItemStack endCrystal = new ItemStack(Material.END_CRYSTAL, 2); // 2 End Crystals
+        return new ItemStack[] { obsidian, endCrystal };  // Return both items as an array
     }
 
     private ItemStack createPotionOfStrength() {
@@ -504,6 +521,8 @@ public class GameManager {
     private int getRandomQuantity() {
         return new Random().nextInt(4) + 2; // Generates a random number between 2 and 5 (inclusive)
     }
+
+
 
 
 
