@@ -29,7 +29,7 @@ During development, one of the core challenges was ensuring balanced gameplay. T
 
 ## 📑 Table of Contents
 - [How to Install and Run the Project](#how-to-install-and-run-the-project)
-- [How to Use the Project](#how-to-use-the-project)
+- [How to Use the Project](#🎮-How-to-Use-the-Project)
 - [Random Supply Drops](#random-supply-drops)
 - [Overpowered Weapons List](#overpowered-weapons-list)
 - [Credits](#credits)
