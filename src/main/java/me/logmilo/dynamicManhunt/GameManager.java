@@ -445,6 +445,7 @@ public class GameManager {
 
     private ItemStack getRandomOverpoweredItem() {
         List<Object> overpoweredItems = Arrays.asList(
+                new ItemStack(Material.MACE),
                 new ItemStack(Material.NETHERITE_SWORD),
                 new ItemStack(Material.NETHERITE_AXE),
                 new ItemStack(Material.ENDER_PEARL, 4),
