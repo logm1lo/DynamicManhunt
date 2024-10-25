@@ -78,7 +78,8 @@ Below is a list of the powerful items that may appear in the game’s supply dro
 
 | Item                            | Description                                                        |
 |----------------------------------|--------------------------------------------------------------------|
-| **Netherite Sword**              | The strongest melee weapon available, delivering heavy damage.      |
+|**The Mace**                      | The Most Powerful Weapon up to date                                |
+|**Netherite Sword**               | The strongest melee weapon available, delivering heavy damage.     |
 | **Netherite Axe**                | A powerful tool that deals critical damage in combat.              |
 | **Ender Pearls (x4)**            | Allows for quick teleportation, ideal for escaping or chasing.     |
 | **Ender Eyes (x64)**             | Essential for fast navigation in the world.                        |
