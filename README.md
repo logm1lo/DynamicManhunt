@@ -36,7 +36,7 @@ During development, one of the core challenges was ensuring balanced gameplay. T
 - [License](#license)
 - [Contribute to the Project](#contribute-to-the-project)
 
-## 🛠 How to Install and Run the Project
+## 🛠 How to Install and Run the Plugin
 
 To get started with **Dynamic Manhunt**, follow these steps:
 
@@ -46,7 +46,7 @@ To get started with **Dynamic Manhunt**, follow these steps:
 4. Restart your server to load the plugin.
 5. Use the `/manhunt start` command to kick off a new game.
 
-## 🎮 How to Use the Project
+## 🎮 How to Use the Plugin
 
 Once the plugin is installed, you can manage the game with the following commands:
 
